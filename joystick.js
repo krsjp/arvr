@@ -66,12 +66,15 @@ AFRAME.registerComponent('touch-joystick', {
   
   addControllerEventListeners: function () {
     this.el.sceneEl.addEventListener('controllerconnected', (event) => {
+      console.log("Controller connected", event.detail.component);
       this.controller = event.detail.component;
     });
 
     this.el.sceneEl.addEventListener('axismove', () => {
+        console.log("Axes values:", this.controller.axes);
         this.controllerMove.x = this.controller.axes[2];
         this.controllerMove.y = this.controller.axes[3];
+        
         this.controllerRotation.y = this.controller.axes[0];
     });
     this.el.sceneEl.addEventListener('controllerdisconnected', () => {
@@ -131,6 +134,7 @@ AFRAME.registerComponent('touch-joystick', {
   },
 
   moveCamera: function (deltaX, deltaY) {
+    
 
     const cameraRig = this.cameraRig.object3D;
     const camera = this.camera.object3D;
