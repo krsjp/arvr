@@ -9,6 +9,10 @@ AFRAME.registerComponent('touch-joystick', {
     handleOpacity: { type: 'number', default: 0.8 }
   },
 
+  
+
+
+
   init: function () {
     this.cameraRig = this.data.cameraRig;
     this.camera = this.data.camera;
@@ -24,8 +28,12 @@ AFRAME.registerComponent('touch-joystick', {
     this.joystickRadius = 0;//Radius of the joystick base.
     this.handleRadius = 0;//Radius of the joystick handle.
 
+    this.controller = null;
+    this.controllerMove = { x: 0, y: 0 };
+    this.controllerRotation = { x: 0, y: 0 };
     this.createJoystick();
     this.addEventListeners();
+    this.addControllerEventListeners();
   },
 
   createJoystick: function () {
@@ -53,6 +61,20 @@ AFRAME.registerComponent('touch-joystick', {
   addEventListeners: function () {
     this.el.addEventListener('touchstart', this.onTouchStart.bind(this));
     this.el.addEventListener('touchmove', this.onTouchMove.bind(this));
+    this.el.addEventListener('touchend', this.onTouchEnd.bind(this));
+  },
+  
+  addControllerEventListeners: function () {
+    this.el.sceneEl.addEventListener('controllerconnected', (event) => {
+      this.controller = event.detail.component;
+    });
+
+    this.el.sceneEl.addEventListener('axismove', () => {
+        this.controllerMove.x = this.controller.axes[2];
+        this.controllerMove.y = this.controller.axes[3];
+        this.controllerRotation.y = this.controller.axes[0];
+    });
+    this.el.sceneEl.addEventListener('controllerdisconnected', () => {
     this.el.addEventListener('touchend', this.onTouchEnd.bind(this));
   },
 
@@ -109,13 +131,24 @@ AFRAME.registerComponent('touch-joystick', {
   },
 
   moveCamera: function (deltaX, deltaY) {
+
     const cameraRig = this.cameraRig.object3D;
     const camera = this.camera.object3D;
 
-    const moveSpeed = 0.01;
+    if (this.controller) {
+      const moveSpeed = 0.05;
+      const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
+      const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
+      const horizontalMovement = right.multiplyScalar(this.controllerMove.x * moveSpeed);
+      const verticalMovement = forward.multiplyScalar(this.controllerMove.y * moveSpeed);
+      const movement = horizontalMovement.add(verticalMovement);
+      cameraRig.position.add(movement);
+      cameraRig.rotation.y -= this.controllerRotation.y * 0.01;
+      return;
+    }
+
+    const moveSpeed = 0.01;    
     const rotationSpeed = 0.005;
-    const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
-    const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
 
     const horizontalMovement = right.multiplyScalar(deltaX * moveSpeed);
     const verticalMovement = forward.multiplyScalar(deltaY * moveSpeed);
