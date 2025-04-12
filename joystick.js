@@ -59,14 +59,14 @@ AFRAME.registerComponent('touch-joystick', {
   onTouchStart: function (event) {
     if (event.touches.length === 1) {
       const touch = event.touches[0];
-      this.isDragging = true;
-      this.startTouchX = touch.clientX;
-      this.startTouchY = touch.clientY;
+      this.initialTouchX = touch.clientX;
+      this.initialTouchY = touch.clientY;
       this.currentTouchX = touch.clientX;
       this.currentTouchY = touch.clientY;
+      this.isDragging = true;
       this.joystickBase.object3D.visible = true;
       this.joystickHandle.object3D.visible = true;
-      this.joystickBase.object3D.position.set((touch.clientX/window.innerWidth)*4-2,(-touch.clientY/window.innerHeight)*4+2,-3);
+      this.joystickBase.object3D.position.set((touch.clientX / window.innerWidth) * 4 - 2, (-touch.clientY / window.innerHeight) * 4 + 2, -0.5);
       this.joystickHandle.object3D.position.copy(this.joystickBase.object3D.position);
     }
   },
@@ -112,16 +112,16 @@ AFRAME.registerComponent('touch-joystick', {
     const cameraRig = this.cameraRig.object3D;
     const camera = this.camera.object3D;
 
-    const moveSpeed = 0.05;
+    const moveSpeed = 0.01;
     const rotationSpeed = 0.005;
     const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
     const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
 
     const horizontalMovement = right.multiplyScalar(deltaX * moveSpeed);
     const verticalMovement = forward.multiplyScalar(deltaY * moveSpeed);
-
+    
     const movement = horizontalMovement.add(verticalMovement);
     cameraRig.position.add(movement);
-    cameraRig.rotation.y -= deltaX * rotationSpeed;
+    cameraRig.rotation.y -= (touch.clientX - this.initialTouchX) * rotationSpeed;
   },
 });
