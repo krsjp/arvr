@@ -1,0 +1,11 @@
+{
+  "name": "webxr-project",
+  "version": "1.0.0",
+  "description": "A WebXR project with A-Frame",
+  "dependencies": {
+    "aframe": "^1.4.0"
+  },
+  "scripts": {
+    "start": "npx live-server ."
+  }
+}
