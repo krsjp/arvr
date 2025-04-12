@@ -6,6 +6,7 @@
     <title>WebXR with A-Frame</title>
     <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r148/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@v6.1.1/dist/aframe-extras.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/aframe-environment-component@1.3.3/dist/aframe-environment-component.min.js"></script>
     <script src="joystick.js"></script>
     <script src="orbit.js"></script>
@@ -32,7 +33,7 @@
         ></a-entity>
 
         <a-entity id="cameraRig" position="0 0 0">
-          <a-camera position="0 1.6 5" orbit="" id="camera" joystick=""></a-camera>
+          <a-camera position="0 1.6 5" orbit="" id="camera" joystick="" xr-mode-ui="enter-ar: #ar-button;"></a-camera>
         </a-entity>
 
         

@@ -12,15 +12,17 @@ AFRAME.registerComponent('touch-joystick', {
   init: function () {
     this.cameraRig = this.data.cameraRig;
     this.camera = this.data.camera;
-    this.isDragging = false;
-    this.startTouchX = 0;
-    this.startTouchY = 0;
-    this.currentTouchX = 0;
-    this.currentTouchY = 0;
-    this.joystickBase = null;
-    this.joystickHandle = null;
-    this.joystickRadius = 0;
-    this.handleRadius = 0;
+    this.isDragging = false;//Indicates if the user is currently dragging the joystick.
+    this.startTouchX = 0;//Stores the X coordinate of the touch when the touch starts.
+    this.startTouchY = 0;//Stores the Y coordinate of the touch when the touch starts.
+    this.currentTouchX = 0;//Stores the current X coordinate of the touch.
+    this.currentTouchY = 0;//Stores the current Y coordinate of the touch.
+    this.initialTouchX = 0; //Stores the initial x coordinate of the touch when the touch starts
+    this.initialTouchY = 0; //Stores the initial y coordinate of the touch when the touch starts
+    this.joystickBase = null;//Reference to the joystick base entity.
+    this.joystickHandle = null;//Reference to the joystick handle entity.
+    this.joystickRadius = 0;//Radius of the joystick base.
+    this.handleRadius = 0;//Radius of the joystick handle.
 
     this.createJoystick();
     this.addEventListeners();
@@ -33,14 +35,14 @@ AFRAME.registerComponent('touch-joystick', {
     this.joystickBase = document.createElement('a-entity');
     this.joystickBase.setAttribute('geometry', { primitive: 'circle', radius: joystickSize, segments: 64 });
     this.joystickBase.setAttribute('material', { color: this.data.baseColor, opacity: this.data.baseOpacity, transparent: true });
-    this.joystickBase.setAttribute('position', { x: -1.5, y: -1, z: -3 });
+    this.joystickBase.setAttribute('position', { x: -1.5, y: -1, z: -0.5 });
     this.joystickBase.setAttribute('visible', false);
     this.el.sceneEl.appendChild(this.joystickBase);
 
     this.joystickHandle = document.createElement('a-entity');
     this.joystickHandle.setAttribute('geometry', { primitive: 'circle', radius: handleSize, segments: 64 });
     this.joystickHandle.setAttribute('material', { color: this.data.handleColor, opacity: this.data.handleOpacity, transparent: true });
-    this.joystickHandle.setAttribute('position', { x: -1.5, y: -1, z: -2.9 });
+    this.joystickHandle.setAttribute('position', { x: -1.5, y: -1, z: -0.4 });
     this.joystickHandle.setAttribute('visible', false);
     this.el.sceneEl.appendChild(this.joystickHandle);
 
@@ -89,9 +91,9 @@ AFRAME.registerComponent('touch-joystick', {
         const angle = Math.atan2(dy, dx);
         const clampedX = this.joystickBase.object3D.position.x + this.joystickRadius * Math.cos(angle);
         const clampedY = this.joystickBase.object3D.position.y + this.joystickRadius * Math.sin(angle);
-        this.joystickHandle.object3D.position.set(clampedX, clampedY, -2.9);
+      this.joystickHandle.object3D.position.set(clampedX, clampedY, -0.4);
       } else {
-        this.joystickHandle.object3D.position.set(newHandleX, newHandleY, -2.9);
+      this.joystickHandle.object3D.position.set(newHandleX, newHandleY, -0.4);
       }
       this.moveCamera(deltaX, deltaY);
       this.startTouchX = this.currentTouchX;
