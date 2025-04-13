@@ -2,35 +2,27 @@
 <html>
   <head>
     <meta charset="UTF-8">
-    <title>VR + Mobile Touch A-Frame</title>
+    <title>VR + Mobile Controls</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/nipplejs@0.9.0/dist/nipplejs.min.js"></script>
   </head>
 
   <body style="margin: 0; overflow: hidden; touch-action: none;">
-    <!-- Joysticks: visíveis apenas em touchscreen -->
-    <div id="joystick-left"
-         style="position: absolute; bottom: 40px; left: 40px; width: 120px; height: 120px; z-index: 10; display: none;"></div>
-
-    <div id="joystick-right"
-         style="position: absolute; bottom: 40px; right: 40px; width: 120px; height: 120px; z-index: 10; display: none;"></div>
+    <div id="joystick-left" style="position: absolute; bottom: 40px; left: 40px; width: 120px; height: 120px; z-index: 10; display: none;"></div>
+    <div id="joystick-right" style="position: absolute; bottom: 40px; right: 40px; width: 120px; height: 120px; z-index: 10; display: none;"></div>
 
     <a-scene vr-mode-ui="enabled: true" renderer="antialias: true">
-      <!-- Camera rig -->
+      <!-- Rig -->
       <a-entity id="cameraRig" position="0 1.6 0">
-        <a-camera wasd-controls="enabled: false" look-controls="enabled: true"></a-camera>
+        <a-camera id="playerCam" wasd-controls="enabled: false" look-controls="enabled: true"></a-camera>
+
+        <!-- Controladores de VR dentro do rig -->
+        <a-entity id="leftHand" hand-controls="hand: left" oculus-touch-controls="hand: left"></a-entity>
+        <a-entity id="rightHand" hand-controls="hand: right" oculus-touch-controls="hand: right"></a-entity>
       </a-entity>
 
-      <!-- Controllers para VR (Meta Quest) -->
-      <a-entity laser-controls="hand: left"></a-entity>
-      <a-entity laser-controls="hand: right"></a-entity>
-
-      <!-- Mãos realistas (opcional) -->
-      <a-entity hand-tracking-controls="hand: left" visible="true"></a-entity>
-      <a-entity hand-tracking-controls="hand: right" visible="true"></a-entity>
-
-      <!-- Objetos de teste -->
+      <!-- Cena -->
       <a-box position="0 0.5 -3" color="tomato"></a-box>
       <a-plane rotation="-90 0 0" width="30" height="30" color="#7BC8A4"></a-plane>
       <a-sky color="#ECECEC"></a-sky>
@@ -41,15 +33,17 @@
         const cameraRig = document.getElementById('cameraRig');
         const joystickLeft = document.getElementById('joystick-left');
         const joystickRight = document.getElementById('joystick-right');
+        const playerCam = document.getElementById('playerCam');
 
         let moveX = 0, moveY = 0, rotY = 0;
+        let isVR = false;
 
         function isTouchDevice() {
           return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
         }
 
         function checkMode() {
-          const isVR = AFRAME.scenes[0].is('vr-mode');
+          isVR = AFRAME.scenes[0].is('vr-mode');
           if (isVR) {
             joystickLeft.style.display = 'none';
             joystickRight.style.display = 'none';
@@ -65,7 +59,7 @@
         AFRAME.scenes[0].addEventListener('enter-vr', checkMode);
         AFRAME.scenes[0].addEventListener('exit-vr', checkMode);
 
-        // Joystick esquerdo – movimento
+        // Joystick Touchscreen (Mobile)
         nipplejs.create({
           zone: joystickLeft,
           mode: 'static',
@@ -81,7 +75,6 @@
           moveY = 0;
         });
 
-        // Joystick direito – rotação
         nipplejs.create({
           zone: joystickRight,
           mode: 'static',
@@ -93,13 +86,37 @@
           rotY = 0;
         });
 
-        AFRAME.registerComponent('dual-joystick', {
+        // Componente que move o player
+        AFRAME.registerComponent('movement-handler', {
+          init: function () {
+            const leftHand = document.getElementById('leftHand');
+            const rightHand = document.getElementById('rightHand');
+
+            // Thumbstick – Movimento
+            leftHand.addEventListener('thumbstickmoved', (evt) => {
+              moveX = evt.detail.x * 0.05;
+              moveY = -evt.detail.y * 0.05;
+            });
+            leftHand.addEventListener('thumbsticktouchend', () => {
+              moveX = 0;
+              moveY = 0;
+            });
+
+            // Thumbstick – Rotação
+            rightHand.addEventListener('thumbstickmoved', (evt) => {
+              rotY = evt.detail.x * 3;
+            });
+            rightHand.addEventListener('thumbsticktouchend', () => {
+              rotY = 0;
+            });
+          },
+
           tick: function () {
             const pos = cameraRig.getAttribute('position');
             const rot = cameraRig.getAttribute('rotation');
             const angleRad = THREE.MathUtils.degToRad(rot.y);
 
-            // Movimento
+            // Mover com base na direção da câmera
             pos.x += Math.sin(angleRad) * moveY + Math.cos(angleRad) * moveX;
             pos.z += Math.cos(angleRad) * moveY - Math.sin(angleRad) * moveX;
             cameraRig.setAttribute('position', pos);
@@ -110,7 +127,7 @@
           }
         });
 
-        cameraRig.setAttribute('dual-joystick', '');
+        cameraRig.setAttribute('movement-handler', '');
         checkMode();
       });
     </script>
