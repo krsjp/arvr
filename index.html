@@ -1,42 +1,72 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
     <title>VR + Mobile + Desktop Controls</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-
-    <!-- A-Frame e extensões -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    
+    <!-- A-Frame -->
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+
+    <!-- Oculus Thumbstick Controls -->
     <script src="https://cdn.jsdelivr.net/gh/gftruj/aframe-oculus-thumbstick-controls@master/oculus-thumbstick-controls.js"></script>
+
+    <!-- Super Hands -->
     <script src="https://cdn.jsdelivr.net/npm/super-hands@4.0.5/dist/super-hands.min.js"></script>
+
+    <!-- NippleJS -->
     <script src="https://cdn.jsdelivr.net/npm/nipplejs@0.9.0/dist/nipplejs.min.js"></script>
+
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+        touch-action: none;
+      }
+
+      #joystick-left, #joystick-right {
+        position: absolute;
+        bottom: 40px;
+        width: 120px;
+        height: 120px;
+        z-index: 999;
+        display: none;
+      }
+
+      #joystick-left {
+        left: 40px;
+      }
+
+      #joystick-right {
+        right: 40px;
+      }
+    </style>
   </head>
 
-  <body style="margin:0; overflow:hidden; touch-action: none;">
+  <body>
     <!-- Touchscreen joysticks -->
-    <div id="joystick-left" style="position: absolute; bottom: 40px; left: 40px; width: 120px; height: 120px; display: none;"></div>
-    <div id="joystick-right" style="position: absolute; bottom: 40px; right: 40px; width: 120px; height: 120px; display: none;"></div>
+    <div id="joystick-left"></div>
+    <div id="joystick-right"></div>
 
     <a-scene vr-mode-ui="enabled: true" embedded>
-      <!-- Rig com controles para VR e mobile -->
-      <a-entity id="rig" oculus-thumbstick-controls movement-handler position="0 1.6 0">
-        <a-camera wasd-controls="enabled: true" look-controls="enabled: true"></a-camera>
+      <!-- Rig principal com componente customizado -->
+      <a-entity id="rig" movement-handler oculus-thumbstick-controls position="0 1.6 0">
+        <a-camera wasd-controls look-controls></a-camera>
       </a-entity>
 
-      <!-- Controles VR -->
-      <a-entity id="leftHand"
-                laser-controls="hand: left; model: true"
+      <!-- Controladores VR -->
+      <a-entity laser-controls="hand: left; model: true"
                 raycaster="objects: .interactable"
                 super-hands></a-entity>
 
-      <a-entity id="rightHand"
-                laser-controls="hand: right; model: true"
+      <a-entity laser-controls="hand: right; model: true"
                 raycaster="objects: .interactable"
                 super-hands></a-entity>
 
       <!-- Objetos interativos -->
       <a-box class="interactable" position="0 1 -3" color="tomato"
              grabbable stretchable draggable drag-rotate></a-box>
+
       <a-sphere class="interactable" position="2 1 -3" radius="0.5" color="skyblue"
                 grabbable stretchable draggable drag-rotate></a-sphere>
 
@@ -48,6 +78,7 @@
     <script>
       const joystickLeft = document.getElementById('joystick-left');
       const joystickRight = document.getElementById('joystick-right');
+
       let moveX = 0, moveY = 0, rotY = 0;
       let isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
@@ -59,7 +90,7 @@
       AFRAME.scenes[0].addEventListener('enter-vr', () => toggleTouchUI(false));
       AFRAME.scenes[0].addEventListener('exit-vr', () => toggleTouchUI(isMobile));
 
-      // Joystick esquerdo (movimento)
+      // NippleJS - Joystick esquerdo (movimento)
       nipplejs.create({
         zone: joystickLeft,
         mode: 'static',
@@ -75,7 +106,7 @@
         moveY = 0;
       });
 
-      // Joystick direito (rotação)
+      // NippleJS - Joystick direito (rotação)
       nipplejs.create({
         zone: joystickRight,
         mode: 'static',
@@ -87,7 +118,7 @@
         rotY = 0;
       });
 
-      // Mobile moviment handler
+      // Componente para movimentação no mobile
       AFRAME.registerComponent('movement-handler', {
         tick: function () {
           const rig = this.el;
@@ -99,12 +130,11 @@
           pos.z += Math.cos(angle) * moveY - Math.sin(angle) * moveX;
           rig.setAttribute('position', pos);
 
-          rot.y += rotY * 0.05;
+          rot.y += rotY * 0.5;
           rig.setAttribute('rotation', rot);
         }
       });
 
-      // Inicialização
       window.addEventListener('DOMContentLoaded', () => {
         toggleTouchUI(isMobile);
       });
