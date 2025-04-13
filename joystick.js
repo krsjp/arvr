@@ -1,6 +1,3 @@
-class Joystick
-{
-
   const cameraRig = document.getElementById('cameraRig');
   const camera = cameraRig.querySelector('a-camera');
 
@@ -74,6 +71,3 @@ class Joystick
   });
 
   cameraRig.setAttribute('dual-joystick', '');
-
-
-}
