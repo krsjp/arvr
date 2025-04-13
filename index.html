@@ -18,9 +18,10 @@
 
     <!-- A-Frame scene -->
     <a-scene>
-      <a-entity id="cameraRig" position="0 1.6 0">
-        <a-camera wasd-controls-enabled="false"></a-camera>
+      <a-entity id="cameraRig" position="0 1.6 0" rotation="0 0 0">
+        <a-camera wasd-controls-enabled="false" look-controls-enabled="false"></a-camera>
       </a-entity>
+
       <a-box position="0 0.5 -5" color="red"></a-box>
       <a-plane rotation="-90 0 0" width="30" height="30" color="#7BC8A4"></a-plane>
       <a-sky color="#ECECEC"></a-sky>
@@ -30,7 +31,6 @@
     <script>
       window.addEventListener('DOMContentLoaded', () => {
         const cameraRig = document.getElementById('cameraRig');
-        const camera = cameraRig.querySelector('a-camera');
 
         let moveX = 0, moveY = 0, rotY = 0;
 
@@ -71,19 +71,21 @@
           rotY = 0;
         });
 
-        // Componente A-Frame que aplica os movimentos
+        // Componente A-Frame para aplicar os controles
         AFRAME.registerComponent('dual-joystick', {
           tick: function () {
             const pos = cameraRig.getAttribute('position');
-            const rot = camera.getAttribute('rotation');
+            const rot = cameraRig.getAttribute('rotation');
             const angleRad = THREE.MathUtils.degToRad(rot.y);
 
+            // Movimento baseado na rotação atual
             pos.x += Math.sin(angleRad) * moveY + Math.cos(angleRad) * moveX;
             pos.z += Math.cos(angleRad) * moveY - Math.sin(angleRad) * moveX;
             cameraRig.setAttribute('position', pos);
 
+            // Rotação horizontal do cameraRig
             rot.y += rotY * 0.05;
-            camera.setAttribute('rotation', rot);
+            cameraRig.setAttribute('rotation', rot);
           }
         });
 
