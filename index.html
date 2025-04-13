@@ -9,6 +9,28 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.9.0/nipplejs.min.js"></script>
         <script src="joystick.js"></script>
 
+
+    </head>
+<body >
+  
+<div id="joystick-left"
+     style="position: absolute; bottom: 50px; left: 50px; width: 150px; height: 150px; z-index: 10; pointer-events: auto;"></div>
+
+<div id="joystick-right"
+     style="position: absolute; bottom: 50px; right: 50px; width: 150px; height: 150px; z-index: 10; pointer-events: auto;"></div>
+
+  
+    <a-scene background="color:#ffffff">
+        <a-asset>
+          <a-asset-item id="car" src="models/pony_cartoon.glb"></a-asset-item>
+        </a-asset>
+      <a-entity id="cameraRig" position="0 0 10">
+        <a-camera wasd-controls-enabled="false"></a-camera>
+      </a-entity>
+      
+        <a-entity gltf-model = "#car"></a-entity>
+    </a-scene>
+  
 <script>
   const cameraRig = document.getElementById('cameraRig');
   const camera = cameraRig.querySelector('a-camera');
@@ -84,25 +106,5 @@
 
   cameraRig.setAttribute('dual-joystick', '');
 </script>
-
-
-    </head>
-<body >
-  
-    <div id="joystick-left" style="position: absolute; bottom: 50px; left: 50px; width: 150px; height: 150px; z-index: 10;"></div>
-    <div id="joystick-right" style="position: absolute; bottom: 50px; right: 50px; width: 150px; height: 150px; z-index: 10;"></div>
-  
-    <a-scene background="color:#ffffff">
-        <a-asset>
-          <a-asset-item id="car" src="models/pony_cartoon.glb"></a-asset-item>
-        </a-asset>
-      <a-entity id="cameraRig" position="0 0 10">
-        <a-camera wasd-controls-enabled="false"></a-camera>
-      </a-entity>
-      
-        <a-entity gltf-model = "#car"></a-entity>
-    </a-scene>
-  
-
 </body>
 </html>
