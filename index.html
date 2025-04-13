@@ -1,88 +1,147 @@
-
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="UTF-8">
-    <title>Joystick A-Frame</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.9.0/nipplejs.min.js"></script>
-  </head>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <title>Model</title>
+        <link rel="stylesheet" href="styles.css" />
+        <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
+      <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.5.4/dist/aframe-extras.min.js"></script>
+      <script src="extended-wasd-controls.js"></script>
+	 <script src="joystick.js"></script>
+    <script src="aframe-master-v1.3.0.min.js"></script>
+	<script src="aframe-env-comp.min.js"></script>
 
-  <body style="margin: 0; overflow: hidden; touch-action: none;">
-    <!-- Joystick containers -->
-    <div id="joystick-left"
-         style="position: absolute; bottom: 40px; left: 40px; width: 120px; height: 120px; z-index: 10; pointer-events: auto;"></div>
+      <style>>
+      
+        .mainUI
+{
+	border: 0px solid pink; 
+	position: fixed; 
+	top: 0px;  
+	width:99%; 
+	height:99%; 
+	z-index: 1; 
+	pointer-events: none; /* allow click-through in transparent areas */
+}
 
-    <div id="joystick-right"
-         style="position: absolute; bottom: 40px; right: 40px; width: 120px; height: 120px; z-index: 10; pointer-events: auto;"></div>
+.regionUI
+{
+	border: 0px solid yellow;
+	position: absolute; 
+	display: flex;
+	flex-direction: row;
+	pointer-events: none;
+}
 
-    <!-- A-Frame scene -->
-    <a-scene>
-      <a-entity id="cameraRig" position="0 1.6 0" rotation="0 0 0">
-        <a-camera wasd-controls-enabled="false" look-controls-enabled="false"></a-camera>
-      </a-entity>
+.buttonUI
+{
+	border: 0px solid lime;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	pointer-events: auto;	
+	filter: drop-shadow(0px 0px 20px white);
+}
+        
+        .skyColor
+{
+	filter: hue-rotate(240deg) saturate(100%) brightness(100%) drop-shadow(0px 0px 20px white);
+}
 
-      <a-box position="0 0.5 -5" color="red"></a-box>
-      <a-plane rotation="-90 0 0" width="30" height="30" color="#7BC8A4"></a-plane>
-      <a-sky color="#ECECEC"></a-sky>
+.baseColor
+{
+	filter: hue-rotate(24deg) saturate(68%) brightness(100%) drop-shadow(0px 0px 20px white);
+}
+
+.grayColor
+{
+	filter: hue-rotate(0deg) saturate(0%) brightness(100%) drop-shadow(0px 0px 20px white);
+}
+      
+      </style>
+    </head>
+<body >
+  
+<div class="mainUI" id="uiDiv" oncontextmenu="return false;">
+
+	<!-- top-left -->
+	<div class="regionUI skyColor" style="top: 10px; left: 10px;" oncontextmenu="return false;">
+	</div>
+
+	<!-- top-right -->
+	<div class="regionUI" style="top: 10px; right: 10px;">
+	</div>
+
+	<!-- bottom-left -->
+	<div class="regionUI" style="bottom: 10px; left: 10px;">
+		<div class="buttonUI" style="width: 128px;  opacity:0.80;">
+			<img src="images/joystick-base.png"/>
+			<div id="stick1" style="position: absolute; left:32px; top:32px;">
+			<img src="images/joystick-red.png"/>		
+			</div>
+		</div>
+	</div>
+
+	<!-- bottom-right -->
+	<div class="regionUI" style="bottom: 10px; right: 10px;">
+		<div class="buttonUI" style="width: 128px; opacity:0.80;">
+			<img src="images/joystick-base.png"/>
+			<div id="stick2" style="position: absolute; left:32px; top:32px;">
+			<img src="images/joystick-blue.png"/>		
+			</div>
+		</div>
+	</div>
+
+</div>
+
+
+
+
+  
+    <a-scene
+            
+             environment="preset: arches; shadow: true;" 
+	keyboard-shortcuts="enterVR: false;" 
+	vr-mode-ui="enabled: false;"
+	screen-controls
+
+	>
+        <a-asset>
+          <a-asset-item id="car" src="models/pony_cartoon.glb"></a-asset-item>
+        </a-asset>
+	<a-entity id="camera" camera
+		position="0 1.6 0"
+		extended-wasd-controls="flyEnabled: true; inputType: joystick;">
+	</a-entity>
+      
+        <a-entity gltf-model = "#car"></a-entity>
     </a-scene>
+  
+  <script>
 
-    <!-- Joystick logic -->
-    <script>
-      window.addEventListener('DOMContentLoaded', () => {
-        const cameraRig = document.getElementById('cameraRig');
+	// need to run javascript code after a-scene entities and components are loaded
+	AFRAME.registerComponent('screen-controls', 
+	{
+		init: function () 
+		{
+    		this.component = document.getElementById("camera").components["extended-wasd-controls"];
+    		this.joystick1 = new Joystick("stick1", 64, 8);
+    		this.joystick2 = new Joystick("stick2", 64, 8);
+  		},
 
-        let moveX = 0, moveY = 0, rotY = 0;
+  		tick: function(time, deltaTime)
+  		{
+  			// console.log( joystick1.value )
+  			// console.log( this.component.movePercent )
+  			this.component.movePercent.x   =  this.joystick1.value.x;
+  			this.component.movePercent.z   = -this.joystick1.value.y;
+  			this.component.rotatePercent.x = -this.joystick2.value.y;
+  			this.component.rotatePercent.y = -this.joystick2.value.x;
+  			
+  			
+  		}
+	});
 
-        // Joystick esquerdo – movimento no plano
-        nipplejs.create({
-          zone: document.getElementById('joystick-left'),
-          mode: 'static',
-          position: { left: '50%', top: '50%' },
-          color: 'blue'
-        }).on('move', (evt, data) => {
-          const angle = data.angle.radian;
-          const force = data.force;
-          moveX = Math.cos(angle) * force * 0.05;
-          moveY = Math.sin(angle) * force * 0.05;
-        }).on('end', () => {
-          moveX = 0;
-          moveY = 0;
-        });
-
-        // Joystick direito – rotação horizontal com eixo X
-        nipplejs.create({
-          zone: document.getElementById('joystick-right'),
-          mode: 'static',
-          position: { left: '50%', top: '50%' },
-          color: 'red'
-        }).on('move', (evt, data) => {
-          rotY = data.vector.x * 5; // controle lateral
-        }).on('end', () => {
-          rotY = 0;
-        });
-
-        // Componente A-Frame que aplica os controles
-        AFRAME.registerComponent('dual-joystick', {
-          tick: function () {
-            const pos = cameraRig.getAttribute('position');
-            const rot = cameraRig.getAttribute('rotation');
-            const angleRad = THREE.MathUtils.degToRad(rot.y);
-
-            // Movimento baseado na rotação
-            pos.x += Math.sin(angleRad) * moveY + Math.cos(angleRad) * moveX;
-            pos.z += Math.cos(angleRad) * moveY - Math.sin(angleRad) * moveX;
-            cameraRig.setAttribute('position', pos);
-
-            // Rotação horizontal (giro em Y)
-            rot.y += rotY * 0.05;
-            cameraRig.setAttribute('rotation', rot);
-          }
-        });
-
-        cameraRig.setAttribute('dual-joystick', '');
-      });
-    </script>
-  </body>
+</script>
+</body>
 </html>
