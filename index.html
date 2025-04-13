@@ -35,7 +35,7 @@
 
         let moveX = 0, moveY = 0, rotY = 0;
 
-        // Joystick esquerdo – movimento no plano
+        // Joystick esquerdo – movimento
         nipplejs.create({
           zone: document.getElementById('joystick-left'),
           mode: 'static',
@@ -51,31 +51,40 @@
           moveY = 0;
         });
 
-        // Joystick direito – rotação horizontal com eixo X
+        // Joystick direito – rotação
         nipplejs.create({
           zone: document.getElementById('joystick-right'),
           mode: 'static',
           position: { left: '50%', top: '50%' },
           color: 'red'
         }).on('move', (evt, data) => {
-          rotY = data.vector.x * 5; // controle lateral
+          const angle = data.angle.degree;
+          const distance = data.distance;
+
+          if (angle > 45 && angle < 135) {
+            rotY = distance * 0.2;
+          } else if (angle > 225 && angle < 315) {
+            rotY = -distance * 0.2;
+          } else {
+            rotY = 0;
+          }
         }).on('end', () => {
           rotY = 0;
         });
 
-        // Componente A-Frame que aplica os controles
+        // Componente A-Frame para aplicar os controles
         AFRAME.registerComponent('dual-joystick', {
           tick: function () {
             const pos = cameraRig.getAttribute('position');
             const rot = cameraRig.getAttribute('rotation');
             const angleRad = THREE.MathUtils.degToRad(rot.y);
 
-            // Movimento baseado na rotação
-            pos.x += Math.sin(angleRad) * moveY + Math.cos(angleRad) * moveX;
-            pos.z += Math.cos(angleRad) * moveY - Math.sin(angleRad) * moveX;
+            // Movimento baseado na rotação atual
+            pos.x += Math.sin(angleRad) * moveX + Math.cos(angleRad) * moveY;
+            pos.z += Math.cos(angleRad) * moveX - Math.sin(angleRad) * moveY;
             cameraRig.setAttribute('position', pos);
 
-            // Rotação horizontal (giro em Y)
+            // Rotação horizontal do cameraRig
             rot.y += rotY * 0.05;
             cameraRig.setAttribute('rotation', rot);
           }
