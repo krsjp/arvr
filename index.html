@@ -1,110 +1,94 @@
 <!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <title>Model</title>
-        <link rel="stylesheet" href="styles.css" />
-        <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.5.4/dist/aframe-extras.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.9.0/nipplejs.min.js"></script>
-        <script src="joystick.js"></script>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Joystick A-Frame</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.9.0/nipplejs.min.js"></script>
+  </head>
 
+  <body style="margin: 0; overflow: hidden; touch-action: none;">
+    <!-- Joystick containers -->
+    <div id="joystick-left"
+         style="position: absolute; bottom: 40px; left: 40px; width: 120px; height: 120px; z-index: 10; pointer-events: auto;"></div>
 
-    </head>
-<body >
-  
-<div id="joystick-left"
-     style="position: absolute; bottom: 50px; left: 50px; width: 150px; height: 150px; z-index: 10; pointer-events: auto;"></div>
+    <div id="joystick-right"
+         style="position: absolute; bottom: 40px; right: 40px; width: 120px; height: 120px; z-index: 10; pointer-events: auto;"></div>
 
-<div id="joystick-right"
-     style="position: absolute; bottom: 50px; right: 50px; width: 150px; height: 150px; z-index: 10; pointer-events: auto;"></div>
-
-  
-    <a-scene background="color:#ffffff">
-        <a-asset>
-          <a-asset-item id="car" src="models/pony_cartoon.glb"></a-asset-item>
-        </a-asset>
-      <a-entity id="cameraRig" position="0 0 10">
+    <!-- A-Frame scene -->
+    <a-scene>
+      <a-entity id="cameraRig" position="0 1.6 0">
         <a-camera wasd-controls-enabled="false"></a-camera>
       </a-entity>
-      
-        <a-entity gltf-model = "#car"></a-entity>
+      <a-box position="0 0.5 -5" color="red"></a-box>
+      <a-plane rotation="-90 0 0" width="30" height="30" color="#7BC8A4"></a-plane>
+      <a-sky color="#ECECEC"></a-sky>
     </a-scene>
-  
-<script>
-  const cameraRig = document.getElementById('cameraRig');
-  const camera = cameraRig.querySelector('a-camera');
 
-  let moveX = 0;
-  let moveY = 0;
-  let rotY = 0;
+    <!-- Joystick logic -->
+    <script>
+      window.addEventListener('DOMContentLoaded', () => {
+        const cameraRig = document.getElementById('cameraRig');
+        const camera = cameraRig.querySelector('a-camera');
 
-  // Joystick esquerdo – movimentação
-  const joystickLeft = nipplejs.create({
-    zone: document.getElementById('joystick-left'),
-    mode: 'static',
-    position: { left: '50%', top: '50%' },
-    color: 'blue'
-  });
+        let moveX = 0, moveY = 0, rotY = 0;
 
-  joystickLeft.on('move', function (evt, data) {
-    const angle = data.angle.radian;
-    const force = data.force;
+        // Joystick esquerdo – movimento
+        nipplejs.create({
+          zone: document.getElementById('joystick-left'),
+          mode: 'static',
+          position: { left: '50%', top: '50%' },
+          color: 'blue'
+        }).on('move', (evt, data) => {
+          const angle = data.angle.radian;
+          const force = data.force;
+          moveX = Math.cos(angle) * force * 0.05;
+          moveY = Math.sin(angle) * force * 0.05;
+        }).on('end', () => {
+          moveX = 0;
+          moveY = 0;
+        });
 
-    moveX = Math.cos(angle) * force * 0.05;
-    moveY = Math.sin(angle) * force * 0.05;
-  });
+        // Joystick direito – rotação
+        nipplejs.create({
+          zone: document.getElementById('joystick-right'),
+          mode: 'static',
+          position: { left: '50%', top: '50%' },
+          color: 'red'
+        }).on('move', (evt, data) => {
+          const angle = data.angle.degree;
+          const distance = data.distance;
 
-  joystickLeft.on('end', function () {
-    moveX = 0;
-    moveY = 0;
-  });
+          if (angle > 45 && angle < 135) {
+            rotY = distance * 0.2;
+          } else if (angle > 225 && angle < 315) {
+            rotY = -distance * 0.2;
+          } else {
+            rotY = 0;
+          }
+        }).on('end', () => {
+          rotY = 0;
+        });
 
-  // Joystick direito – rotação da câmera
-  const joystickRight = nipplejs.create({
-    zone: document.getElementById('joystick-right'),
-    mode: 'static',
-    position: { left: '50%', top: '50%' },
-    color: 'red'
-  });
+        // Componente A-Frame que aplica os movimentos
+        AFRAME.registerComponent('dual-joystick', {
+          tick: function () {
+            const pos = cameraRig.getAttribute('position');
+            const rot = camera.getAttribute('rotation');
+            const angleRad = THREE.MathUtils.degToRad(rot.y);
 
-  joystickRight.on('move', function (evt, data) {
-    const distance = data.distance;
-    const angle = data.angle.degree;
+            pos.x += Math.sin(angleRad) * moveY + Math.cos(angleRad) * moveX;
+            pos.z += Math.cos(angleRad) * moveY - Math.sin(angleRad) * moveX;
+            cameraRig.setAttribute('position', pos);
 
-    // Ajuste fino da rotação com base na direção do movimento
-    if (angle > 45 && angle < 135) {
-      rotY = distance * 0.2; // direita
-    } else if (angle > 225 && angle < 315) {
-      rotY = -distance * 0.2; // esquerda
-    } else {
-      rotY = 0;
-    }
-  });
+            rot.y += rotY * 0.05;
+            camera.setAttribute('rotation', rot);
+          }
+        });
 
-  joystickRight.on('end', function () {
-    rotY = 0;
-  });
-
-  // Componente A-Frame que atualiza posição e rotação
-  AFRAME.registerComponent('dual-joystick', {
-    tick: function () {
-      const pos = cameraRig.getAttribute('position');
-      const rot = camera.getAttribute('rotation');
-
-      // Movimento baseado na rotação atual da câmera
-      const angleRad = THREE.MathUtils.degToRad(rot.y);
-      pos.x += Math.sin(angleRad) * moveY + Math.cos(angleRad) * moveX;
-      pos.z += Math.cos(angleRad) * moveY - Math.sin(angleRad) * moveX;
-      cameraRig.setAttribute('position', pos);
-
-      // Rotação horizontal (eixo Y)
-      rot.y += rotY * 0.05;
-      camera.setAttribute('rotation', rot);
-    }
-  });
-
-  cameraRig.setAttribute('dual-joystick', '');
-</script>
-</body>
+        cameraRig.setAttribute('dual-joystick', '');
+      });
+    </script>
+  </body>
 </html>
