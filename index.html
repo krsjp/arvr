@@ -79,8 +79,8 @@
             const angleRad = THREE.MathUtils.degToRad(rot.y);
 
             // Movimento baseado na rotação atual
-            pos.x += Math.sin(angleRad) * moveX + Math.cos(angleRad) * moveX;
-            pos.z += Math.cos(angleRad) * moveX - Math.sin(angleRad) * moveX;
+            pos.x += Math.sin(angleRad) * moveX + Math.cos(angleRad) * moveY;
+            pos.z += Math.cos(angleRad) * moveX - Math.sin(angleRad) * moveY;
             cameraRig.setAttribute('position', pos);
 
             // Rotação horizontal do cameraRig
