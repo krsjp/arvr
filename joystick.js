@@ -72,6 +72,3 @@ function createJoystick() {
         }
     }
   });
-    cameraRig.rotation.y -= (touch.clientX - this.initialTouchX) * rotationSpeed;
-  },
-});
