@@ -44,7 +44,7 @@
         }).on('move', (evt, data) => {
           const angle = data.angle.radian;
           const force = data.force;
-          moveX = Math.cos(angle) * force * 0.05;
+          moveX = Math.cos(angle) * force * -0.05;
           moveY = Math.sin(angle) * force * 0.05;
         }).on('end', () => {
           moveX = 0;
