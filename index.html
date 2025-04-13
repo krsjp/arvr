@@ -2,24 +2,25 @@
 <html>
   <head>
     <meta charset="UTF-8">
-    <title>Joystick A-Frame</title>
+    <title>Controle VR e Touchscreen</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.9.0/nipplejs.min.js"></script>
   </head>
 
   <body style="margin: 0; overflow: hidden; touch-action: none;">
-    <!-- Joystick containers -->
+    <!-- Joystick containers (aparecem no modo touchscreen) -->
     <div id="joystick-left"
          style="position: absolute; bottom: 40px; left: 40px; width: 120px; height: 120px; z-index: 10; pointer-events: auto;"></div>
 
     <div id="joystick-right"
          style="position: absolute; bottom: 40px; right: 40px; width: 120px; height: 120px; z-index: 10; pointer-events: auto;"></div>
 
-    <!-- A-Frame scene -->
-    <a-scene>
-      <a-entity id="cameraRig" position="0 1.6 0" rotation="0 0 0">
-        <a-camera wasd-controls-enabled="false" look-controls-enabled="false"></a-camera>
+    <!-- A-Frame scene com VR ativado -->
+    <a-scene vr-mode-ui="enabled: true">
+      <!-- Camera rig com controles de VR nativos -->
+      <a-entity id="cameraRig" position="0 1.6 0">
+        <a-camera wasd-controls="enabled: false" look-controls="pointerLockEnabled: false"></a-camera>
       </a-entity>
 
       <a-box position="0 0.5 -5" color="red"></a-box>
@@ -27,16 +28,47 @@
       <a-sky color="#ECECEC"></a-sky>
     </a-scene>
 
-    <!-- Joystick logic -->
+    <!-- Script de controle de entrada de VR e joysticks -->
     <script>
       window.addEventListener('DOMContentLoaded', () => {
         const cameraRig = document.getElementById('cameraRig');
+        const joystickLeft = document.getElementById('joystick-left');
+        const joystickRight = document.getElementById('joystick-right');
 
         let moveX = 0, moveY = 0, rotY = 0;
 
+        // Função para verificar a plataforma e ativar os controles
+        const checkPlatform = () => {
+          const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+          const isVR = AFRAME.scenes[0].is('vr-mode'); // Verifica se está no modo VR
+
+          if (isVR) {
+            // Esconde os joysticks no VR
+            joystickLeft.style.display = 'none';
+            joystickRight.style.display = 'none';
+          } else if (isMobile) {
+            // Mostra os joysticks apenas em dispositivos móveis
+            joystickLeft.style.display = 'block';
+            joystickRight.style.display = 'block';
+          } else {
+            // Esconde os joysticks em dispositivos não móveis
+            joystickLeft.style.display = 'none';
+            joystickRight.style.display = 'none';
+          }
+        };
+
+        // Detectar mudança no modo VR e checar a plataforma
+        AFRAME.scenes[0].addEventListener('enter-vr', () => {
+          checkPlatform(); // Verifica e ajusta os controles
+        });
+
+        AFRAME.scenes[0].addEventListener('exit-vr', () => {
+          checkPlatform(); // Verifica e ajusta os controles
+        });
+
         // Joystick esquerdo – movimento no plano
         nipplejs.create({
-          zone: document.getElementById('joystick-left'),
+          zone: joystickLeft,
           mode: 'static',
           position: { left: '50%', top: '50%' },
           color: 'blue'
@@ -52,7 +84,7 @@
 
         // Joystick direito – rotação horizontal com eixo X
         nipplejs.create({
-          zone: document.getElementById('joystick-right'),
+          zone: joystickRight,
           mode: 'static',
           position: { left: '50%', top: '50%' },
           color: 'red'
@@ -81,6 +113,7 @@
         });
 
         cameraRig.setAttribute('dual-joystick', '');
+        checkPlatform(); // Checa a plataforma ao iniciar
       });
     </script>
   </body>
