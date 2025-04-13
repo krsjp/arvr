@@ -2,24 +2,25 @@
 <html>
   <head>
     <meta charset="UTF-8">
-    <title>VR + Mobile Controls</title>
+    <title>VR Navigation + Touchscreen Joysticks</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/nipplejs@0.9.0/dist/nipplejs.min.js"></script>
   </head>
 
   <body style="margin: 0; overflow: hidden; touch-action: none;">
+    <!-- Joysticks apenas para touchscreen -->
     <div id="joystick-left" style="position: absolute; bottom: 40px; left: 40px; width: 120px; height: 120px; z-index: 10; display: none;"></div>
     <div id="joystick-right" style="position: absolute; bottom: 40px; right: 40px; width: 120px; height: 120px; z-index: 10; display: none;"></div>
 
     <a-scene vr-mode-ui="enabled: true" renderer="antialias: true">
-      <!-- Rig -->
+      <!-- Camera Rig -->
       <a-entity id="cameraRig" position="0 1.6 0">
         <a-camera id="playerCam" wasd-controls="enabled: false" look-controls="enabled: true"></a-camera>
 
-        <!-- Controladores de VR dentro do rig -->
-        <a-entity id="leftHand" hand-controls="hand: left" oculus-touch-controls="hand: left"></a-entity>
-        <a-entity id="rightHand" hand-controls="hand: right" oculus-touch-controls="hand: right"></a-entity>
+        <!-- Controles do Quest (sem mãos) -->
+        <a-entity id="leftHand" oculus-touch-controls="hand: left"></a-entity>
+        <a-entity id="rightHand" oculus-touch-controls="hand: right"></a-entity>
       </a-entity>
 
       <!-- Cena -->
@@ -86,13 +87,13 @@
           rotY = 0;
         });
 
-        // Componente que move o player
+        // Componente de movimento com VR ou touch
         AFRAME.registerComponent('movement-handler', {
           init: function () {
             const leftHand = document.getElementById('leftHand');
             const rightHand = document.getElementById('rightHand');
 
-            // Thumbstick – Movimento
+            // Movimento com o thumbstick esquerdo
             leftHand.addEventListener('thumbstickmoved', (evt) => {
               moveX = evt.detail.x * 0.05;
               moveY = -evt.detail.y * 0.05;
@@ -102,7 +103,7 @@
               moveY = 0;
             });
 
-            // Thumbstick – Rotação
+            // Rotação com o thumbstick direito
             rightHand.addEventListener('thumbstickmoved', (evt) => {
               rotY = evt.detail.x * 3;
             });
@@ -116,12 +117,12 @@
             const rot = cameraRig.getAttribute('rotation');
             const angleRad = THREE.MathUtils.degToRad(rot.y);
 
-            // Mover com base na direção da câmera
+            // Mover
             pos.x += Math.sin(angleRad) * moveY + Math.cos(angleRad) * moveX;
             pos.z += Math.cos(angleRad) * moveY - Math.sin(angleRad) * moveX;
             cameraRig.setAttribute('position', pos);
 
-            // Rotação
+            // Girar
             rot.y += rotY * 0.05;
             cameraRig.setAttribute('rotation', rot);
           }
