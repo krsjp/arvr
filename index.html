@@ -6,17 +6,26 @@
         <link rel="stylesheet" href="styles.css" />
         <script src="https://aframe.io/releases/1.7.0/aframe.min.js"></script>
         <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.5.4/dist/aframe-extras.min.js"></script>
+        <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.9.0/nipplejs.min.js"></script>
+        <script src="joystick.js"></script>
 
+        
 
     </head>
 <body >
+  
+  <div id="joystick-left" style="position: absolute; bottom: 50px; left: 50px; width: 150px; height: 150px;"></div>
+  <div id="joystick-right" style="position: absolute; bottom: 50px; right: 50px; width: 150px; height: 150px;"></div>
+
     <a-scene background="color:#ffffff">
         <a-asset>
           <a-asset-item id="car" src="models/pony_cartoon.glb"></a-asset-item>
         </a-asset>
         <a-entity movement-controls="speed:0.15" position = "0 0 6">
-          <a-entity camera position="0 1 -4"
+          <a-entity camera id="cameraRig" position="0 1 -4"
                     look-controls="pointerLockEnabled : true"
+                    wasd-controls-enabled="false"
                     >
             <a-cursor></a-cursor>
           
